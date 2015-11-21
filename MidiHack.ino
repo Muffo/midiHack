@@ -2,8 +2,8 @@
  MIDI Hack
  */
 
-#define PRINT_MONITOR
-// #define WRITE_MIDI
+//#define PRINT_MONITOR
+#define WRITE_MIDI
 
 
 // Standard Midi values
@@ -12,8 +12,12 @@
 #define CC_CH0  0xB0
 
 
+
 int midiValX = 0;
 int midiValY = 0;
+int sentMidiValX = 0;
+int sentMidiValY = 0;
+
 
 void setup() {
   //  Set MIDI baud rate:
@@ -21,12 +25,19 @@ void setup() {
 }
 
 void loop() {
+  
   delay(10);
   readJoystick(midiValX, midiValY);
 
+  if (sentMidiValX != midiValX) {
+    sendCommand(0x10, midiValX);
+    sentMidiValX = midiValX;
+  }
   
-  sendCommand(0x10, midiValX);
-  sendCommand(0x11, midiValY);
+  if (sentMidiValY != midiValY) {
+    sendCommand(0x11, midiValY);
+    sentMidiValY = midiValY;
+  }
 }
 
 
