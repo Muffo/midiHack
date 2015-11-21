@@ -2,16 +2,24 @@
  MIDI Hack
  */
 
-//#define PRINT_MONITOR
-#define WRITE_MIDI
+
+/* ===== Sonar ===== */
+
+#include <NewPing.h>
+
+#define TRIGGER_PIN  12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN     11  // Arduino pin tied to echo pin on the ultrasonic sensor.
+
+// Maximum sensor distance is rated at 400-500cm.
+#define MAX_DISTANCE 40  // Maximum distance we want to ping for (in centimeters). 
+
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
+
+int midiValDist = 0;
+int sentMidiValDist = 0;
 
 
-// Standard Midi values
-#define NOTE_OFF_CH0 0x80
-#define NOTE_ON_CH0  0x90
-#define CC_CH0  0xB0
-
-
+/* ===== Joystick ===== */
 
 int midiValX = 0;
 int midiValY = 0;
@@ -19,15 +27,32 @@ int sentMidiValX = 0;
 int sentMidiValY = 0;
 
 
+/* ===== Midi ===== */
+
+// #define PRINT_MONITOR
+// #define WRITE_MIDI
+
+// Standard Midi values
+#define NOTE_OFF_CH0 0x80
+#define NOTE_ON_CH0  0x90
+#define CC_CH0  0xB0
+
+/* ===== Debug ===== */
+
+#define SONAR_DEBUG
+// #define STICK_DEBUG
+
 void setup() {
-  //  Set MIDI baud rate:
   Serial.begin(9600);
 }
 
+
+
 void loop() {
   
-  delay(10);
+  delay(50);
   readJoystick(midiValX, midiValY);
+  midiValDist = readSonar();
 
   if (sentMidiValX != midiValX) {
     sendCommand(0x10, midiValX);
@@ -38,8 +63,30 @@ void loop() {
     sendCommand(0x11, midiValY);
     sentMidiValY = midiValY;
   }
+
+  if (sentMidiValDist != midiValDist) {
+    sendCommand(0x12, midiValDist);
+    sentMidiValDist = midiValDist;
+  }
 }
 
+int readSonar() {
+  unsigned int pingVal = 0;
+  byte result = 0;
+ 
+  pingVal = sonar.ping_median(5);
+  pingVal = sonar.convert_cm(pingVal);
+
+  // Remove offset and re-scale
+  pingVal = 3 * (max(pingVal - 7, 0));
+  result = min(pingVal, 127);
+
+  result = 127 - result;
+
+#ifdef SONAR_DEBUG
+  Serial.println(result);
+#endif
+}
 
 void readJoystick(int &horiz, int &vert) {
 
