@@ -38,7 +38,7 @@ int sentMidiValY = 0;
 /* ===== Midi ===== */
 
 // #define PRINT_MONITOR
-// #define WRITE_MIDI
+#define WRITE_MIDI
 
 // Standard Midi values
 #define NOTE_OFF_CH0 0x80
@@ -47,7 +47,7 @@ int sentMidiValY = 0;
 
 /* ===== Debug ===== */
 
-#define BUTTON_DEBUG
+// #define BUTTON_DEBUG
 // #define SONAR_DEBUG
 // #define STICK_DEBUG
 
