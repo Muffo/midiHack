@@ -62,11 +62,10 @@ void setup() {
 
 
 void loop() {
-  
-  delay(2);
+ 
   sonarDelay++;
   readJoystick(midiValX, midiValY);
-  if (sonarDelay == 10) {
+  if (sonarDelay == 100) {
     midiValDist = readSonar();
     sonarDelay = 0;
   }
@@ -91,9 +90,9 @@ void loop() {
   for (int i=0; i < NUM_BUTTONS; i++) {
     if (buttons[i] != newButtons[i]) {
       if (newButtons[i] == 0) { 
-        noteOff(24 + i, 127);        
+        noteOff(36 + i, 127);        
       } else {
-        noteOn(24 + i, 127);
+        noteOn(36 + i, 127);
       }
       #ifdef BUTTON_DEBUG
          Serial.print(i);
