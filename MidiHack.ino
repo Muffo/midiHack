@@ -25,6 +25,7 @@ NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
 int midiValDist = 0;
 int sentMidiValDist = 0;
+int sonarDelay = 0;
 
 
 /* ===== Joystick ===== */
@@ -62,9 +63,13 @@ void setup() {
 
 void loop() {
   
-  delay(50);
+  delay(2);
+  sonarDelay++;
   readJoystick(midiValX, midiValY);
-  midiValDist = readSonar();
+  if (sonarDelay == 10) {
+    midiValDist = readSonar();
+    sonarDelay = 0;
+  }
   readButtons(newButtons);
   
 
