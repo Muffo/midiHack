@@ -3,6 +3,14 @@
  */
 
 
+/* ===== Buttons ===== */
+
+#define NUM_BUTTONS 4
+#define BUTTON_BASE 4
+int buttons[NUM_BUTTONS];
+int newButtons[NUM_BUTTONS];
+
+
 /* ===== Sonar ===== */
 
 #include <NewPing.h>
@@ -30,7 +38,7 @@ int sentMidiValY = 0;
 /* ===== Midi ===== */
 
 // #define PRINT_MONITOR
-// #define WRITE_MIDI
+#define WRITE_MIDI
 
 // Standard Midi values
 #define NOTE_OFF_CH0 0x80
@@ -39,10 +47,14 @@ int sentMidiValY = 0;
 
 /* ===== Debug ===== */
 
-#define SONAR_DEBUG
+// #define BUTTON_DEBUG
+// #define SONAR_DEBUG
 // #define STICK_DEBUG
 
 void setup() {
+  for (int i=0; i < BUTTON_BASE; i++) {
+    pinMode(BUTTON_BASE + i, INPUT);
+  }
   Serial.begin(9600);
 }
 
@@ -53,6 +65,8 @@ void loop() {
   delay(50);
   readJoystick(midiValX, midiValY);
   midiValDist = readSonar();
+  readButtons(newButtons);
+  
 
   if (sentMidiValX != midiValX) {
     sendCommand(0x10, midiValX);
@@ -67,6 +81,28 @@ void loop() {
   if (sentMidiValDist != midiValDist) {
     sendCommand(0x12, midiValDist);
     sentMidiValDist = midiValDist;
+  }
+
+  for (int i=0; i < NUM_BUTTONS; i++) {
+    if (buttons[i] != newButtons[i]) {
+      if (newButtons[i] == 0) { 
+        noteOff(24 + i, 127);        
+      } else {
+        noteOn(24 + i, 127);
+      }
+      #ifdef BUTTON_DEBUG
+         Serial.print(i);
+         Serial.print(" button: ");
+         Serial.println(newButtons[i]);
+       #endif
+      buttons[i] = newButtons[i];
+    }
+  }
+}
+
+void readButtons(int *btns) {
+  for (int i=0; i < NUM_BUTTONS; i++) {
+    btns[i] = !digitalRead(BUTTON_BASE + i);    
   }
 }
 
@@ -118,6 +154,11 @@ void sendCommand(int cc, int value) {
 void noteOn(int pitch, int velocity) {
   writeMidi(NOTE_ON_CH0, pitch, velocity);
 }
+
+void noteOff(int pitch, int velocity) {
+  writeMidi(NOTE_OFF_CH0, pitch, velocity);
+}
+
 
 
 void writeMidi(int byte1, int byte2, int byte3) {
